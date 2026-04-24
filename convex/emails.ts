@@ -6,6 +6,7 @@ import { internal } from "./_generated/api";
 import { Resend } from "resend";
 import { BookingSubmittedEmail } from "../emails/BookingSubmitted";
 import { NewBookingAlertEmail } from "../emails/NewBookingAlert";
+import { BookingStatusChangedEmail } from "../emails/BookingStatusChanged";
 import * as React from "react";
 
 export const sendBookingSubmitted = internalAction({
@@ -81,6 +82,44 @@ export const sendNewBookingAlert = internalAction({
       });
     } catch (err) {
       console.error("Resend sendNewBookingAlert error:", err);
+    }
+  },
+});
+
+export const sendStatusChanged = internalAction({
+  args: {
+    bookingId: v.id("bookings"),
+    status: v.union(v.literal("approved"), v.literal("rejected")),
+  },
+  handler: async (ctx, { bookingId, status }) => {
+    const booking = await ctx.runQuery(internal.bookings.getBookingForEmail, {
+      bookingId,
+    });
+    if (!booking) {
+      console.error("sendStatusChanged: booking not found", bookingId);
+      return;
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
+        to: booking.guestEmail,
+        subject: `Booking ${status === "approved" ? "Approved" : "Rejected"} — ${booking.venueName}`,
+        react: React.createElement(BookingStatusChangedEmail, {
+          guestName: booking.guestName,
+          venueName: booking.venueName,
+          eventDate: booking.eventDate,
+          eventType: booking.eventType,
+          status,
+          publicToken: booking.publicToken,
+          appUrl,
+        }),
+      });
+    } catch (err) {
+      console.error("Resend sendStatusChanged error:", err);
     }
   },
 });

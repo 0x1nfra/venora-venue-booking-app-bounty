@@ -124,6 +124,11 @@ export const updateStatus = mutation({
       adminNotes: args.adminNotes,
       statusChangedAt: Date.now(),
     });
+
+    await ctx.scheduler.runAfter(0, internal.emails.sendStatusChanged, {
+      bookingId: args.bookingId,
+      status: args.status,
+    });
   },
 });
 
