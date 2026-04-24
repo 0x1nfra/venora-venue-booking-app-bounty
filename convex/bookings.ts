@@ -1,5 +1,6 @@
 import { customAlphabet } from "nanoid";
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 const nanoid = customAlphabet(
@@ -64,6 +65,27 @@ export const create = mutation({
       publicToken,
     });
 
+    await ctx.scheduler.runAfter(0, internal.emails.sendBookingSubmitted, {
+      bookingId,
+    });
+
     return { bookingId, publicToken };
+  },
+});
+
+export const getBookingForEmail = internalQuery({
+  args: { bookingId: v.id("bookings") },
+  handler: async (ctx, { bookingId }) => {
+    const booking = await ctx.db.get(bookingId);
+    if (!booking) return null;
+    const venue = await ctx.db.get(booking.venueId);
+    return {
+      guestName: booking.guestName,
+      guestEmail: booking.guestEmail,
+      eventDate: booking.eventDate,
+      eventType: booking.eventType,
+      publicToken: booking.publicToken,
+      venueName: venue?.name ?? "Unknown Venue",
+    };
   },
 });
