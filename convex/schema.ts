@@ -67,6 +67,7 @@ export default defineSchema({
     publicToken: v.string(),
   })
     .index("by_venue_and_date", ["venueId", "eventDate"])
+    .index("by_venue_and_status", ["venueId", "status"])
     .index("by_status", ["status"])
     .index("by_vendor_and_status", ["vendorId", "status"])
     .index("by_public_token", ["publicToken"]),
