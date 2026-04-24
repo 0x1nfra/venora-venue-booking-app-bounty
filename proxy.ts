@@ -1,13 +1,13 @@
+import { convexAuthNextjsMiddleware } from "@convex-dev/auth/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function proxy(request: NextRequest) {
+export const proxy = convexAuthNextjsMiddleware((request: NextRequest) => {
   const { pathname } = request.nextUrl;
   const isAdminRoute =
     pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
 
   if (isAdminRoute) {
-    // Cookie presence check — full auth verification happens in admin layout
     const hasAuth =
       request.cookies.get("__convexAuthJWT") ||
       request.cookies.get("__convexAuthRefreshToken");
@@ -15,10 +15,8 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
-
-  return NextResponse.next();
-}
+});
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };
