@@ -3,6 +3,36 @@ import { internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
+export const listByVendor = query({
+  args: {
+    vendorId: v.id("vendors"),
+    status: v.optional(
+      v.union(
+        v.literal("pending"),
+        v.literal("approved"),
+        v.literal("rejected"),
+        v.literal("cancelled")
+      )
+    ),
+  },
+  handler: async (ctx, { vendorId, status }) => {
+    if (status) {
+      return ctx.db
+        .query("bookings")
+        .withIndex("by_vendor_and_status", (q) =>
+          q.eq("vendorId", vendorId).eq("status", status)
+        )
+        .order("desc")
+        .collect();
+    }
+    return ctx.db
+      .query("bookings")
+      .withIndex("by_vendor_and_status", (q) => q.eq("vendorId", vendorId))
+      .order("desc")
+      .collect();
+  },
+});
+
 const nanoid = customAlphabet(
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
   21
