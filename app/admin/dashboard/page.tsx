@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "next/navigation";
 import { BookingsTable } from "@/components/admin/BookingsTable";
+import { BookingDetailSheet } from "@/components/admin/BookingDetailSheet";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +14,8 @@ import { LogOut, Building2 } from "lucide-react";
 export default function AdminDashboardPage() {
   const { signOut } = useAuthActions();
   const router = useRouter();
-  const filterTab = useAdminUIStore((s) => s.filterTab);
+  const selectedBooking = useAdminUIStore((s) => s.selectedBooking);
+  const setSelectedBooking = useAdminUIStore((s) => s.setSelectedBooking);
 
   const vendor = useQuery(api.vendors.getMyVendor);
   const bookings = useQuery(
@@ -66,9 +68,17 @@ export default function AdminDashboardPage() {
             No vendor account linked to this user.
           </p>
         ) : (
-          <BookingsTable bookings={bookings} />
+          <BookingsTable
+            bookings={bookings}
+            onSelectBooking={setSelectedBooking}
+          />
         )}
       </main>
+
+      <BookingDetailSheet
+        booking={selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+      />
     </div>
   );
 }

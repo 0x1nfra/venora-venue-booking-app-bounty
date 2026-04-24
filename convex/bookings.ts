@@ -106,6 +106,27 @@ export const create = mutation({
   },
 });
 
+export const updateStatus = mutation({
+  args: {
+    bookingId: v.id("bookings"),
+    status: v.union(v.literal("approved"), v.literal("rejected")),
+    adminNotes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const booking = await ctx.db.get(args.bookingId);
+    if (!booking) throw new Error("Booking not found");
+
+    await ctx.db.patch(args.bookingId, {
+      status: args.status,
+      adminNotes: args.adminNotes,
+      statusChangedAt: Date.now(),
+    });
+  },
+});
+
 export const getBookingForEmail = internalQuery({
   args: { bookingId: v.id("bookings") },
   handler: async (ctx, { bookingId }) => {
