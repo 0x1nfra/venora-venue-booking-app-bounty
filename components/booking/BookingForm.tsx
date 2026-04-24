@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import {
@@ -38,6 +38,7 @@ interface BookingFormProps {
 
 export function BookingForm({ venueId, onSuccess }: BookingFormProps) {
   const bookedDates = useQuery(api.bookings.getBookedDates, { venueId });
+  const createBooking = useMutation(api.bookings.create);
 
   const form = useForm<BookingFormValues>({
     resolver: standardSchemaResolver(bookingFormSchema),
@@ -51,9 +52,17 @@ export function BookingForm({ venueId, onSuccess }: BookingFormProps) {
   });
 
   const onSubmit = async (data: BookingFormValues) => {
-    // wired in Commit 10
-    void data;
-    void onSuccess;
+    const result = await createBooking({
+      venueId,
+      guestName: data.guestName,
+      guestEmail: data.guestEmail,
+      guestPhone: data.guestPhone,
+      eventDate: data.eventDate,
+      eventType: data.eventType,
+      guestCount: data.guestCount,
+      notes: data.notes,
+    });
+    onSuccess(result.bookingId, result.publicToken);
   };
 
   return (

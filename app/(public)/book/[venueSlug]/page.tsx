@@ -1,6 +1,7 @@
 "use client";
 
 import { use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -12,6 +13,7 @@ export default function BookingPage(props: {
   params: Promise<{ venueSlug: string }>;
 }) {
   const { venueSlug } = use(props.params);
+  const router = useRouter();
   const venue = useQuery(api.venues.getBySlug, { slug: venueSlug });
 
   if (venue === undefined) return <BookingPageSkeleton />;
@@ -48,8 +50,8 @@ export default function BookingPage(props: {
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
         <BookingForm
           venueId={venue._id}
-          onSuccess={(_bookingId, _publicToken) => {
-            // redirect wired in Commit 10
+          onSuccess={(_bookingId, publicToken) => {
+            router.push(`/booking/${publicToken}`);
           }}
         />
       </div>
