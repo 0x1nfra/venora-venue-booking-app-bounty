@@ -68,6 +68,9 @@ export const create = mutation({
     await ctx.scheduler.runAfter(0, internal.emails.sendBookingSubmitted, {
       bookingId,
     });
+    await ctx.scheduler.runAfter(0, internal.emails.sendNewBookingAlert, {
+      bookingId,
+    });
 
     return { bookingId, publicToken };
   },
@@ -82,8 +85,11 @@ export const getBookingForEmail = internalQuery({
     return {
       guestName: booking.guestName,
       guestEmail: booking.guestEmail,
+      guestPhone: booking.guestPhone,
       eventDate: booking.eventDate,
       eventType: booking.eventType,
+      guestCount: booking.guestCount,
+      notes: booking.notes,
       publicToken: booking.publicToken,
       venueName: venue?.name ?? "Unknown Venue",
     };
