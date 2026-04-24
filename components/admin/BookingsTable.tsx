@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
 import { CalendarDays, Inbox } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { format } from "date-fns";
 
 type Booking = Doc<"bookings">;
@@ -48,6 +49,7 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
   return (
     <div className="space-y-4">
       <Tabs value={filterTab} onValueChange={(v) => setFilterTab(v as FilterTab)}>
+        <div className="overflow-x-auto">
         <TabsList>
           {TABS.map((tab) => {
             const count =
@@ -64,6 +66,7 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
             );
           })}
         </TabsList>
+        </div>
       </Tabs>
 
       {bookings === undefined ? (
@@ -73,25 +76,25 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-          <Inbox className="mb-3 h-10 w-10 opacity-40" />
-          <p className="text-sm font-medium">No bookings yet</p>
-          <p className="text-xs mt-1">
-            {filterTab === "all"
+        <EmptyState
+          icon={Inbox}
+          title="No bookings yet"
+          description={
+            filterTab === "all"
               ? "Bookings will appear here in real-time."
-              : `No ${filterTab} bookings.`}
-          </p>
-        </div>
+              : `No ${filterTab} bookings.`
+          }
+        />
       ) : (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Guest</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Event Type</TableHead>
+                <TableHead className="hidden sm:table-cell">Date</TableHead>
+                <TableHead className="hidden md:table-cell">Event Type</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Submitted</TableHead>
+                <TableHead className="hidden sm:table-cell text-right">Submitted</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -107,21 +110,24 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
                       <p className="text-xs text-muted-foreground">
                         {booking.guestEmail}
                       </p>
+                      <p className="text-xs text-muted-foreground sm:hidden mt-0.5">
+                        {booking.eventDate}
+                      </p>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <div className="flex items-center gap-1.5 text-sm">
                       <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
                       {booking.eventDate}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="hidden md:table-cell text-sm">
                     {EVENT_TYPE_LABELS[booking.eventType] ?? booking.eventType}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={booking.status} />
                   </TableCell>
-                  <TableCell className="text-right text-xs text-muted-foreground font-mono">
+                  <TableCell className="hidden sm:table-cell text-right text-xs text-muted-foreground font-mono">
                     {format(new Date(booking._creationTime), "dd MMM, HH:mm")}
                   </TableCell>
                 </TableRow>

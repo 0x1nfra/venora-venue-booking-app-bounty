@@ -11,6 +11,7 @@ import {
   EVENT_TYPE_LABELS,
   type BookingFormValues,
 } from "@/lib/validators";
+import { toast } from "sonner";
 import { DatePickerWithAvailability } from "./DatePickerWithAvailability";
 import {
   Form,
@@ -52,17 +53,21 @@ export function BookingForm({ venueId, onSuccess }: BookingFormProps) {
   });
 
   const onSubmit = async (data: BookingFormValues) => {
-    const result = await createBooking({
-      venueId,
-      guestName: data.guestName,
-      guestEmail: data.guestEmail,
-      guestPhone: data.guestPhone,
-      eventDate: data.eventDate,
-      eventType: data.eventType,
-      guestCount: data.guestCount,
-      notes: data.notes,
-    });
-    onSuccess(result.bookingId, result.publicToken);
+    try {
+      const result = await createBooking({
+        venueId,
+        guestName: data.guestName,
+        guestEmail: data.guestEmail,
+        guestPhone: data.guestPhone,
+        eventDate: data.eventDate,
+        eventType: data.eventType,
+        guestCount: data.guestCount,
+        notes: data.notes,
+      });
+      onSuccess(result.bookingId, result.publicToken);
+    } catch {
+      toast.error("Failed to submit booking. Please try again.");
+    }
   };
 
   return (

@@ -22,30 +22,42 @@ export function VenueGallery({
   const [main, ...thumbs] = images;
 
   return (
-    <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[420px] rounded-xl overflow-hidden">
-      {/* Main large image */}
-      <div className="col-span-3 row-span-2 relative">
+    <div className="rounded-xl overflow-hidden">
+      {/* Mobile: single full-width image */}
+      <div className="relative h-64 sm:h-80 md:hidden">
         <Image
           src={main.src}
           alt={main.alt}
           fill
           className="object-cover"
-          sizes="(max-width: 768px) 100vw, 60vw"
+          sizes="100vw"
           priority
         />
       </div>
-      {/* 3 small thumbnails */}
-      {thumbs.slice(0, 3).map((img, i) => (
-        <div key={i} className="relative col-span-1 row-span-1">
+      {/* Desktop: main + thumbnails grid */}
+      <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[420px]">
+        <div className="col-span-3 row-span-2 relative">
           <Image
-            src={img.src}
-            alt={img.alt}
+            src={main.src}
+            alt={main.alt}
             fill
             className="object-cover"
-            sizes="20vw"
+            sizes="60vw"
+            priority
           />
         </div>
-      ))}
+        {thumbs.slice(0, 3).map((img, i) => (
+          <div key={i} className="relative col-span-1 row-span-1">
+            <Image
+              src={img.src}
+              alt={img.alt}
+              fill
+              className="object-cover"
+              sizes="20vw"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
