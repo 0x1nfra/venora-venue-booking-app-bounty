@@ -17,10 +17,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
-import { CalendarDays, CheckCircle, Inbox, XCircle } from "lucide-react";
+import { CalendarDays, CheckCircle, Inbox, Search, X, XCircle } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useDebounce } from "@/lib/use-debounce";
+import { toShortId } from "@/lib/ics-generator";
 
 type Booking = Doc<"bookings">;
 type FilterTab = "all" | "pending" | "approved" | "rejected";
@@ -46,9 +49,10 @@ interface BookingsTableProps {
 }
 
 export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps) {
-  const { filterTab, setFilterTab } = useAdminUIStore();
+  const { filterTab, setFilterTab, searchQuery, setSearchQuery } = useAdminUIStore();
   const [loadingId, setLoadingId] = useState<Id<"bookings"> | null>(null);
   const updateStatus = useMutation(api.bookings.updateStatus);
+  const debouncedSearch = useDebounce(searchQuery);
 
   async function handleInlineAction(
     e: React.MouseEvent,
@@ -67,11 +71,38 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
     }
   }
 
-  const filtered =
-    bookings?.filter((b) => filterTab === "all" || b.status === filterTab) ?? [];
+  const filtered = (bookings ?? []).filter((b) => {
+    if (filterTab !== "all" && b.status !== filterTab) return false;
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
+    const shortId = toShortId(b._id).toLowerCase();
+    return (
+      b.guestName.toLowerCase().includes(q) ||
+      b.guestEmail.toLowerCase().includes(q) ||
+      shortId.includes(q.replace(/^ven-/i, ""))
+    );
+  });
 
   return (
     <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by guest name, email, or booking ID..."
+          className="pl-9 pr-9"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       <Tabs value={filterTab} onValueChange={(v) => setFilterTab(v as FilterTab)}>
         <div className="overflow-x-auto">
         <TabsList>
@@ -102,13 +133,24 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={Inbox}
-          title="No bookings yet"
+          title={debouncedSearch ? "No bookings match your search" : "No bookings yet"}
           description={
-            filterTab === "all"
-              ? "Bookings will appear here in real-time."
-              : `No ${filterTab} bookings.`
+            debouncedSearch
+              ? undefined
+              : filterTab === "all"
+                ? "Bookings will appear here in real-time."
+                : `No ${filterTab} bookings.`
           }
-        />
+        >
+          {debouncedSearch && (
+            <button
+              className="text-sm text-primary underline-offset-2 hover:underline"
+              onClick={() => setSearchQuery("")}
+            >
+              Clear search
+            </button>
+          )}
+        </EmptyState>
       ) : (
         <div className="rounded-md border">
           <Table>
