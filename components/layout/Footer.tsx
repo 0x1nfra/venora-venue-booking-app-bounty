@@ -20,6 +20,10 @@ export function Footer() {
         <p className="text-xs text-muted-foreground">
           Powered by{" "}
           <span className="font-medium text-foreground">Venora</span>
+          {" · "}
+          <Link href="/admin/dashboard" className="hover:text-foreground transition-colors">
+            Admin
+          </Link>
         </p>
       </div>
     </footer>

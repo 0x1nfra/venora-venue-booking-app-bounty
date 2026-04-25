@@ -49,15 +49,26 @@ A responsive venue booking web app where guests browse a venue, pick a date, and
 13. Guest can check booking status via a unique link (no login) — `/booking/[token]`
 14. Admin dashboard stats (total pending, this week, approval rate)
 15. Minimal Venora branding (logo wordmark in header, favicon)
+16. **Velvet & Steel UI overhaul (v1.1)** — full design system rollout based on Stitch mocks: warm bone/terracotta palette, Noto Serif headings, glassmorphic nav, 0.5px borders, pill chips, status badge glows
+17. **Bento gallery on venue detail (v1.1)** — asymmetric 4-col grid replacing simple gallery
+18. **Sticky pricing sidebar on venue detail (v1.1)** — floating card with price + Check Availability CTA on desktop
+19. **Concierge Request booking form (v1.1)** — underline inputs + pill-chip event type selector
+20. **Command Center admin dashboard (v1.1)** — stats cards + Activity Feed sidebar + redesigned bookings table with inline Approve/Reject actions
+21. **Image preview dialog (v1.1)** — clicking venue images opens enlarged view in a shadcn Dialog. Lightweight, no carousel, no extra deps. Full lightbox carousel deferred to true Phase 2.
 
 ### Nice-to-Have (post-bounty)
 
-16. Google OAuth for admin
-17. Multi-venue mode UI (vendor signup, venue CRUD, super-admin approval queue)
-18. Hourly time slots (schema already supports)
-19. Payment integration (Stripe/Billplz)
-20. iCal export
-21. SMS notifications
+22. Google OAuth for admin
+23. Multi-venue mode UI (vendor signup, venue CRUD, super-admin approval queue)
+24. **Full venue editing** (replace the read-only stub with real CRUD + image upload)
+25. **Calendar view of bookings** (admin sees bookings on a month/week grid — strong client-work selling point for Phase 2)
+26. **Reviews & ratings** on venue detail pages
+27. **Revenue dashboard** (meaningful only after payment integration lands)
+28. Hourly time slots (schema already supports)
+29. Payment integration (Stripe/Billplz)
+30. iCal export
+31. SMS notifications
+32. **Full lightbox carousel** (replaces the simple Dialog stub from item 21, lands during UI overhaul)
 
 ---
 
@@ -361,25 +372,84 @@ export const singleVenueSlug = process.env.NEXT_PUBLIC_SINGLE_VENUE_SLUG!;
 
 ---
 
-## 7. UI/UX Guidelines
+## 7. UI/UX Guidelines — "Velvet & Steel" Design System
 
-**Philosophy:** Ship functional-but-clean first, then polish aesthetics on Saturday if time permits. No custom design system — lean on shadcn defaults with Geist + one accent color change.
+**Personality:** The precision and reliability of a high-end fintech tool (the steel) merged with the warmth, tactility, and luxury of a boutique concierge service (the velvet). Inspired by Linear's refined borders, Aman/Edition Hotels' breathable serif typography and warm palette, and Arc/Framer's tactile micro-interactions.
 
-- **shadcn preset:** `new-york` — tighter spacing, sharper corners, pairs well with Geist.
-- **Typography:** **Geist Sans** (UI) + **Geist Mono** (booking IDs, timestamps, admin metadata). Installed via the official `geist` package, wired through Tailwind's `font-sans`/`font-mono` utilities.
-- **Accent color:** Custom primary color (something warmer than default slate — e.g., a deep teal or burnt orange) to signal design effort to bounty judges. Set in `app/globals.css` via `--primary` CSS variable.
-- **Components used:** `Button`, `Card`, `Input`, `Textarea`, `Select`, `Calendar`, `Dialog`, `Sheet`, `Badge`, `Table`, `Tabs`, `Form`, `Toast` (Sonner), `Skeleton`.
-- **Mobile:** Test at 375px (iPhone SE). Booking form is single-column. Admin dashboard uses a `Sheet` instead of side panel on mobile.
-- **Accessibility:** shadcn handles most of this — trust it. Verify: color contrast on status badges, keyboard nav on date picker, proper `<label>` associations.
-- **Loading states:** Skeleton for initial loads, Sonner toasts for mutation feedback.
-- **Empty states:** "No bookings yet" with friendly copy + illustration (lucide-react icon is fine).
+### Design tokens
 
-### Status badge colors
+**Color palette:**
 
-- `pending` → amber/yellow
-- `approved` → green
-- `rejected` → red
-- `cancelled` → gray
+- Background (light): `hsl(30 20% 98%)` — Soft Bone
+- Background surfaces: `hsl(30 15% 96%)` to `hsl(30 10% 92%)` warm grays
+- Primary (accent): `#9a4100` (Burnt Terracotta) — sophisticated, warm, high-contrast
+- Primary container: `#bd5611` for hover states
+- Outline variant: `#ddc1b3` for 0.5px borders
+- Status colors: pending = secondary container (amber-warm), approved = tertiary container (deep teal), rejected = error container (warm red), cancelled = surface variant (gray)
+
+**Typography:**
+
+- **Display + Headings (h1, h2):** Noto Serif (italic for accent words like the "Venora" wordmark). Tracking-tight. Used for venue names, page titles, hero copy.
+- **Body + UI:** Geist Sans. Used for paragraphs, buttons, form fields, navigation.
+- **Metadata:** Geist Mono. Used for booking IDs (`#8845`), timestamps, dates in tables.
+
+**Shape & texture:**
+
+- **Border radius:** `0.5rem` (lg) for cards, inputs, tables. `9999px` (full) for primary CTAs and pill chips.
+- **Borders:** `0.5px` width with `border-outline-variant` color — the "Retina-sharp" feel.
+- **Shadows:** Multi-layered ambient (`0 2px 10px rgba(0,0,0,0.02)` for resting cards, `0 8px 30px rgba(154,65,0,0.2)` for primary CTAs). Not muddy, not heavy.
+- **Glassmorphism:** Reserved for fixed nav (`backdrop-blur-xl bg-white/70`) — frosted crystal, not cheap plastic.
+
+### Page-level patterns
+
+- **Top nav:** Fixed, glassmorphic, italic serif Venora wordmark, link list (Venues / Concierge / etc.), Sign In CTA. Same component shared across public + admin (admin variant just swaps right-side actions).
+- **Landing hero:** Full-bleed venue image background with gradient fade to bg color. Serif headline with italic accent on second line. Pill-shaped primary CTA with shimmer effect on hover.
+- **Venue detail:** Bento gallery (4-col asymmetric grid, 1 large + 4 small), serif venue name + location/rating row, Capacity + Amenities sections separated by 0.5px dividers, sticky pricing sidebar on desktop.
+- **Booking form ("Concierge Request"):** Underline-only inputs for personal info (name, email), bordered inputs for structured fields (date, guest count). Pill-shaped radio chips for event nature. Pill-shaped submit CTA.
+- **Admin dashboard ("The Command Center"):** Page header with title + subtitle + Export/New Booking actions. 3-stat-card row (Total Pending / This Week / Approval Rate). Two-column body: Activity Feed sidebar (left) + Recent Bookings table (right). Status badges have subtle glow shadows.
+
+### Components used
+
+`Button`, `Card`, `Input`, `Textarea`, `Select`, `Calendar`, `Dialog`, `Sheet`, `Badge`, `Table`, `Tabs`, `Form`, `Toast` (Sonner), `Skeleton`, `ToggleGroup` (for pill chips).
+
+### Mobile
+
+- Test at 375px (iPhone SE).
+- Bento gallery collapses to a single-column stack.
+- Sticky booking sidebar uses `lg:sticky` only — stacks below content on mobile.
+- Booking form is single-column at all breakpoints.
+- Admin dashboard: Activity Feed and table stack vertically, table becomes horizontally scrollable.
+
+### Accessibility
+
+- shadcn handles keyboard nav, focus rings, ARIA — trust the primitives.
+- Verify: color contrast on the warm palette (especially terracotta on bone background — should be 4.5:1+), keyboard nav on Bento gallery (each image needs to be focusable for the Dialog trigger), proper `<label>` associations remain after underline-input restyle.
+- Italic serif at small sizes is hard to read — only use italic for display sizes (h1, accent words), never for body or UI labels.
+
+### Loading & empty states
+
+- Skeleton for initial loads (especially Bento gallery and booking table).
+- Sonner toasts for mutation feedback (booking submitted, status changed).
+- Empty Activity Feed: "No recent activity" with a small lucide-react icon.
+- Empty Bookings table (filtered to a status with zero results): "No {status} bookings."
+
+### Status badge colors (with glow)
+
+- `pending` → secondary container (warm amber), `box-shadow: 0 0 8px rgba(228,225,231,0.5)`
+- `approved` → tertiary container (deep teal), `box-shadow: 0 0 8px rgba(0,125,170,0.2)`
+- `rejected` → error container (warm red), `box-shadow: 0 0 8px rgba(255,218,214,0.4)`
+- `cancelled` → surface variant (neutral gray), no glow
+
+### Explicitly NOT building (Stitch mock contains these — skip)
+
+- Multi-venue Bento grid on landing (single-venue mode only)
+- Check-in/Check-out date range pickers (your model is single-day)
+- Revenue dollar stat card (no payments)
+- Cleaning fee + Service fee line items (not modeled)
+- Reviews section + star ratings (deferred feature)
+- Magnetic buttons / availability pulse / receipt-fold animations (Framer Motion rabbit hole — `hover:scale-[1.02]` covers 90% of perceived polish)
+- Bricolage Grotesque or any third font (Noto Serif + Geist Sans + Geist Mono is sufficient)
+- "Show all 24 amenities" / "View All" / "Show all photos" buttons (imply data you don't have — hardcode or remove)
 
 ---
 
@@ -484,6 +554,22 @@ Skip: component snapshot tests, unit tests for shadcn wrappers, anything that te
 - [ ] Record a 2-min demo video (Loom) showing full flow
 - [ ] Polish README with screenshots
 - [ ] Submit to KrackedDevs by midnight Saturday (buffer before Sun 1am deadline)
+
+### Phase 1.1: Velvet & Steel UI overhaul (Saturday, ~10h)
+
+Pulled forward from the original "post-bounty UI overhaul" slot based on Stitch design mocks. Slot this in **after Commit 20 lands** and **before the demo video shoot**. Total budget: ~10 hours of focused work.
+
+**Commits 21-27 in the commit plan, in order:**
+
+- [ ] **21:** Design system foundation (color palette, fonts, 0.5px borders) — instant visual transformation
+- [ ] **22:** Glassmorphic nav + italic serif Venora wordmark across public + admin
+- [ ] **23:** Landing page hero with full-bleed image + serif headline
+- [ ] **24:** Venue detail Bento gallery + sticky pricing sidebar (longest commit, 90-120 min)
+- [ ] **25:** Concierge Request booking form with pill chips
+- [ ] **26:** Command Center admin dashboard with Activity Feed + inline actions
+- [ ] **27:** Image preview Dialog + cursor-pointer audit + mobile responsiveness pass
+
+**Drop order if behind:** 27 → 26 (partial) → 25. **Never drop 21-24** — they are the visible foundation. **Hard stop:** if Commit 24 isn't done by Saturday 6pm KL, ship v1.0 as-is.
 
 ### Phase 2: Multi-vendor mode (Post-bounty, ~1 week)
 

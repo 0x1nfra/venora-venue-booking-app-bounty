@@ -212,6 +212,151 @@ git push --tags
 
 ---
 
+## Phase 1.1 — "Velvet & Steel" UI Overhaul (7 commits, ~10h)
+
+**Status:** All commits 1-20 are shipped. UI overhaul is being pulled forward into the bounty itself based on the Stitch design mocks ("Velvet & Steel" personality — boutique hospitality precision). Total budget: ~10 hours of focused work, leaving ~3-4 hours for demo video + README + buffer.
+
+**Design system reference:**
+
+- **Background:** `hsl(30 20% 98%)` Soft Bone (light) / `hsl(240 10% 4%)` Deep Obsidian (dark — defer)
+- **Primary:** `hsl(24 70% 50%)` Burnt Terracotta (already similar to your warm accent)
+- **Heading font:** Noto Serif (italic for the "Venora" wordmark)
+- **Body font:** Geist Sans (already installed)
+- **Borders:** `0.5px` width, `border-outline-variant` color
+- **Radius:** `0.5rem` (lg) for cards, `9999px` (full) for primary CTAs
+
+**Priority order if time-pressed:** 21 > 22 > 23 > 24 > 25 > 26 > 27. Drop from the bottom.
+
+**What to explicitly NOT extract from the Stitch mocks** (these are traps):
+
+- Multi-venue Bento grid on landing page (single-venue mode)
+- Check-in/Check-out date range picker pattern (your bookings are full-day, not Airbnb-style)
+- Revenue $ stat card (you don't have payments)
+- Cleaning fee + Service fee line items (you don't model these)
+- Reviews section + 4.95 star rating (deferred feature, not real data)
+- Magnetic buttons / availability pulse / receipt-fold animations (Framer Motion rabbit hole)
+- Bricolage Grotesque (pick one serif: Noto Serif, that's it)
+- Activity Feed payment events (your activity = booking events only)
+- "View All" / "Show all 24 amenities" links (imply data you don't have)
+
+---
+
+### Commit 21: `feat(theme): velvet and steel design system foundation`
+
+**Scope:** Update `app/globals.css` with the new color tokens (Soft Bone background, Burnt Terracotta primary, warm surface variants). Install Noto Serif via `next/font/google` alongside existing Geist. Add `font-serif` utility to Tailwind config pointing at Noto Serif. Replace existing accent color values throughout.
+**Why this commit:** This is the **single highest-impact change in the overhaul.** Before any layout changes, just swapping the color palette + adding the serif font instantly transforms how every existing page looks. If you only have time for ONE UI commit, this is it.
+**Done when:** Running `pnpm dev` shows every page now has the warm bone/terracotta palette. Existing components didn't break — they just look different. No layout changes yet.
+**Files touched:** `app/globals.css` (all CSS variables), `app/layout.tsx` (font imports), `tailwind.config.ts` (font family), `components/ui/button.tsx` (verify cursor-pointer present)
+**Agent context:** Stitch design system color values + Tailwind theme docs
+**💡 Tip:** Use the exact HSL values from the Stitch CSS config. Copy the entire color block. Don't try to "improve" it — the palette is cohesive as-is.
+**⚠️ Test before commit:** Walk through every page (landing, venue detail, booking form, admin login, admin dashboard) and verify nothing is unreadable. Low contrast bugs are easy to introduce here.
+**⏱️ Budget:** 45-60 min
+
+---
+
+### Commit 22: `feat(layout): glassmorphism nav and italic serif wordmark`
+
+**Scope:** Update top navigation across public + admin layouts: fixed positioning, `backdrop-blur-xl bg-white/70`, `border-b-[0.5px] border-outline-variant`, subtle shadow. Change Venora wordmark to italic Noto Serif. Add nav links (`Venues`, `Concierge`, etc. — point to `#` or actual routes).
+**Why this commit:** The nav is on every page. Upgrading it propagates everywhere. Glassmorphism is a 2026 design signal that costs ~5 lines of Tailwind.
+**Done when:** Nav is fixed top, semi-transparent with blur, sharp 0.5px bottom border. Venora wordmark is italic serif. Admin pages share the same nav style with the same wordmark (just different right-side actions — Sign Out instead of Sign In).
+**Files touched:** `components/layout/Header.tsx`, `app/admin/layout.tsx` (admin header variant)
+**Agent context:** Stitch landing page nav HTML structure (lines: `<nav class="fixed top-0..."`)
+**💡 Tip:** Add `pt-24` or similar to your `<main>` containers to compensate for the now-fixed nav, otherwise content gets hidden under it.
+**⏱️ Budget:** 30-45 min
+
+---
+
+### Commit 23: `feat(landing): immersive hero with serif headline`
+
+**Scope:** Replace landing page hero with Stitch-style immersive layout: full-bleed background image (use one of your seeded venue Unsplash images), gradient overlay fading to background color, large serif headline with italic accent on second line ("Unforgettable Spaces, _Curated with Precision._"), pill-shaped primary CTA. Skip the multi-venue Bento grid below — replace with a single large "Featured Venue" card that links to The Grand Hall KL.
+**Why this commit:** Landing is the first impression for judges. Current landing is functional; this makes it look intentional.
+**Done when:** Landing has full-bleed hero image, serif headline with italic accent, working CTA to venue detail. Below the hero is ONE featured venue card (not a grid). Footer styled to match.
+**Files touched:** `app/(public)/page.tsx`, `components/layout/Footer.tsx`, possibly new `components/landing/HeroSection.tsx` and `components/landing/FeaturedVenueCard.tsx`
+**Agent context:** Stitch landing page HTML — extract the hero `<header>` block + footer. **IGNORE the Bento grid section** — single venue mode means one card, not nine.
+**💡 Tip:** For the hero image, just reuse one of the venue images already in Convex File Storage. Don't introduce new assets.
+**⚠️ Common pitfall:** The Stitch mock uses serif `<h1>` with italic on a `<span>`. Make sure your Tailwind config has `font-serif` pointing at Noto Serif and that you're using `italic` class, not the Italic font weight.
+**⏱️ Budget:** 60-90 min
+
+---
+
+### Commit 24: `feat(venue): bento gallery and sticky pricing sidebar`
+
+**Scope:** Restructure venue detail page: (a) Replace gallery grid with the 4-column / 2-row Bento layout from Stitch mock — one large 2x2 image left, four smaller images right, "Show all photos" button on the bottom-right image. (b) Move pricing/booking CTA into a sticky right sidebar that follows scroll on desktop. (c) Restyle "About the space" / "Capacity" / "Amenities" sections with serif h2 headings + 0.5px section dividers.
+**Why this commit:** Venue detail is THE money page — it's where judges spend the most time and where the "luxury booking" feel lands or dies.
+**Done when:** Gallery is a Bento grid (asymmetric, large hero image left). Pricing sidebar is sticky on desktop, stacks below content on mobile. Section headings are serif. The "Check Availability" CTA in the sidebar links to your existing booking form (do NOT replace the booking form pattern — keep your single-date model, just style the CTA card around it).
+**Files touched:** `components/venue/VenueGallery.tsx` (Bento grid), `components/venue/StickyBookingSidebar.tsx` (new), `app/(public)/venues/[slug]/page.tsx` (layout grid 8/4 cols), `components/venue/AmenitiesList.tsx` (icon + label rows)
+**Agent context:** Stitch venue detail HTML — extract the `<main>` block. **DO NOT extract the Cleaning fee / Service fee line items in the sidebar** — those don't exist in your data. Show price + total only.
+**💡 Tip:** The sticky sidebar is `position: sticky; top: 120px;` on a wrapper div. The `lg:col-span-4` for sidebar + `lg:col-span-8` for content is the easy way.
+**⚠️ Mobile critical:** Sticky sidebar disasters on mobile. Use `lg:sticky` so it's only sticky on large screens; on mobile, it stacks below content normally.
+**⏱️ Budget:** 90-120 min — **the longest commit in the overhaul.** Budget accordingly.
+
+---
+
+### Commit 25: `feat(booking): concierge request form with pill chips`
+
+**Scope:** Restyle booking form to match Stitch "Concierge Request" mock: rename page H1 to "Concierge Request", add subtitle "Allow us to tailor an extraordinary experience for your upcoming event." Replace event-type Select with **pill-shaped radio chips** (Corporate Retreat / Wedding Reception / Private Dining / Brand Launch / Other). Use underline-only inputs for First Name/Last Name/Email/Phone (border-bottom only, transparent bg). Use bordered inputs for Date / Guest Count / Notes. Pill primary submit button.
+**Why this commit:** The form is what judges actually interact with most when testing your demo. Better visual hierarchy + the chip pattern signals thought.
+**Done when:** Form looks like the Stitch mock. Pill chips work as a radio group (only one selected at a time). Submit button is pill-shaped, primary color. Form still validates with existing Zod schema.
+**Files touched:** `components/booking/BookingForm.tsx`, possibly extend `lib/validators.ts` event types if your enum changed
+**Agent context:** Stitch booking form HTML — extract the `<form>` block. The pill chip pattern uses `<input type="radio" class="peer sr-only" /> <div class="...peer-checked:bg-primary-container">`.
+**💡 Tip:** Don't change the Zod schema or mutation — only the visual layout. The data shape stays identical.
+**⏱️ Budget:** 45-60 min
+
+---
+
+### Commit 26: `feat(admin): command center dashboard with activity feed`
+
+**Scope:** Restyle admin dashboard: page H1 "The Command Center" + subtitle "Real-time overview and booking management." Add 3 stat cards at the top (Total Pending / This Week / Approval Rate — **NOT revenue**). Add Activity Feed sidebar on the left showing recent booking events (new request, approved, rejected) — pulls from existing `bookings.listByVendor`, just sorts by `_creationTime` desc and renders timeline-style. Restyle bookings table with subtle status badge glows (`box-shadow: 0 0 8px var(--status-color)`).
+**Why this commit:** The admin dashboard is the second-most-judged page. Activity Feed is the "wow" moment of the redesign — it makes the admin feel like a real product, not a CRUD interface.
+**Done when:** Stats cards render with real numbers from Convex queries. Activity Feed shows last 5-10 booking events with relative timestamps ("Just now", "15m ago"). Table has new badge styling. Inline Approve/Reject actions still work (carry forward from original Phase 1.1 plan — DO NOT skip these).
+**Files touched:** `app/admin/dashboard/page.tsx`, `components/admin/StatsCards.tsx` (new), `components/admin/ActivityFeed.tsx` (new), `components/admin/BookingsTable.tsx` (badge restyle + inline actions), `convex/bookings.ts` (add a small `getRecentActivity` query if needed, or reuse `listByVendor` and sort client-side)
+**Agent context:** Stitch admin dashboard HTML — extract the `<main>` block. **DO NOT extract the "Payment Received" or "Revenue (MTD)" elements** — those are payment features you don't have. Substitute "Approval Rate" for the third stat card.
+**💡 Tip:** Activity Feed is just `bookings.listByVendor()` results sorted by `statusChangedAt ?? _creationTime` desc, mapped to timeline items. The icon depends on the latest status change. Use `date-fns/formatDistanceToNow` for relative timestamps.
+**⚠️ Carry over from original Phase 1.1:** Inline Actions column (Approve/Reject buttons in each row) MUST be in this commit. They were the highest-ROI item from the original polish pass.
+**⏱️ Budget:** 90-120 min
+
+---
+
+### Commit 27: `feat(venue): image preview dialog and final polish`
+
+**Scope:** Add click-to-enlarge Dialog on venue gallery images (carry-over from original Commit 24). `cursor-pointer` audit across all interactive elements. Add Venora wordmark + tagline to admin login page. Verify mobile responsiveness at 375px on all redesigned pages — landing, venue detail (Bento collapses to single column on mobile), booking form, admin dashboard. Fix any visual regressions found during walkthrough.
+**Why this commit:** This is the cleanup commit. After 5 hours of new component work, things will be slightly broken. This commit is where you walk through the entire app one more time and fix what's wrong.
+**Done when:** You can click any venue image to see it enlarged. Every clickable element has a pointer cursor. All redesigned pages work at 375px viewport. Admin login no longer feels like a different app.
+**Files touched:** `components/venue/VenueGallery.tsx` (Dialog wrapper), `components/venue/ImagePreviewDialog.tsx` (new), `app/admin/login/page.tsx` (branding), various components for mobile fixes
+**Agent context:** Original Phase 1.1 Commit 24 spec + walkthrough notes
+**⚠️ If running tight on time:** Skip the image preview Dialog (static gallery is acceptable). Mobile responsiveness is NOT skippable — the bounty explicitly requires responsive design.
+**⏱️ Budget:** 60-90 min
+
+---
+
+### Re-tag after the overhaul
+
+```bash
+git tag -a v1.1-bounty-submission -m "KrackedDevs RM500 submission with Velvet & Steel UI overhaul"
+git push --tags
+```
+
+The `v1.0` tag stays as a marker of the functional MVP. `v1.1` is what you submit — same features, dramatically better presentation.
+
+---
+
+## What to do if you fall behind in Phase 1.1
+
+**Total budget: ~10 hours.** With ~25 hours to deadline minus sleep + demo video + README + buffer, you have realistic working time of ~12-14 hours.
+
+If you start falling behind, drop in this order:
+
+- **Skip Commit 27** (final polish) — image Dialog is nice but optional. Mobile responsiveness can be quickly checked during demo video shoot.
+- **Skip Commit 26 partially** — keep the new dashboard heading + inline actions, drop the Activity Feed. Still ships visibly upgraded.
+- **Skip Commit 25** — the booking form works fine as-is. Concierge styling is a nice-to-have.
+- **Never skip Commits 21-24** — these are the visible foundation. Without them you've shipped nothing visually.
+
+**Hard stop rule:** If by Saturday 6pm KL time you haven't finished Commit 24 (the venue detail Bento + sticky sidebar), **stop the overhaul and ship v1.0 as-is.** Half-finished UI looks worse than functional plain UI. The bounty rewards "complete" over "ambitious-but-broken."
+
+**Deploy continuously.** After each commit lands, push to Vercel. If Vercel breaks on commit 25, you can roll back to 24 and still have a polished submission.
+
+---
+
 ## Context reset pattern (use this between commits)
 
 When you clear the agent's context, open the new session with this:
@@ -219,7 +364,7 @@ When you clear the agent's context, open the new session with this:
 ```
 I'm building Venora, a venue booking web app for the KrackedDevs RM500 bounty due Sunday 26 Apr 2026 1am MYT.
 
-Full PRD: [paste PRD contents]
+Full PRD: @docs/prd.md
 
 Current state:
 - Completed commits 1 through [N]
@@ -234,9 +379,9 @@ Go.
 
 ---
 
-## What to do if you fall behind
+## What to do if you fall behind (Phase 1 reference)
 
-The commits are ordered by priority. If Saturday night hits and you're behind schedule:
+The commits are ordered by priority. **You've already completed commits 1-20**, so this is reference material for understanding the original priority hierarchy:
 
 - **Commits 1-10:** Non-negotiable. The app doesn't work without these.
 - **Commits 11-12:** Email is a differentiator but not a deal-breaker. Skip if necessary, note in README.
@@ -245,3 +390,5 @@ The commits are ordered by priority. If Saturday night hits and you're behind sc
 - **Commits 19-20:** Polish and README are critical for judge perception. Do NOT skip.
 
 **Minimum viable submission** = commits 1, 2, 3, 5, 6, 7, 8, 9, 10, 13, 14, 15, 19, 20 (14 commits). Everything else is leverage.
+
+**Current focus:** Phase 1.1 Velvet & Steel UI overhaul (commits 21-27) → demo video → README polish → submit.
