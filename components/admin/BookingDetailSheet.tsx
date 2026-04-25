@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -38,7 +38,27 @@ interface BookingDetailSheetProps {
 export function BookingDetailSheet({ booking, onClose }: BookingDetailSheetProps) {
   const [adminNotes, setAdminNotes] = useState("");
   const [isPending, setIsPending] = useState(false);
+  const [internalNotes, setInternalNotes] = useState(booking?.adminNotes ?? "");
+  const [notesSaving, setNotesSaving] = useState(false);
   const updateStatus = useMutation(api.bookings.updateStatus);
+  const updateNotes = useMutation(api.bookings.updateNotes);
+
+  useEffect(() => {
+    setInternalNotes(booking?.adminNotes ?? "");
+  }, [booking?._id, booking?.adminNotes]);
+
+  async function handleSaveNotes() {
+    if (!booking) return;
+    setNotesSaving(true);
+    try {
+      await updateNotes({ bookingId: booking._id, notes: internalNotes });
+      toast.success("Notes saved");
+    } catch {
+      toast.error("Failed to save notes.");
+    } finally {
+      setNotesSaving(false);
+    }
+  }
 
   async function handleAction(status: "approved" | "rejected") {
     if (!booking) return;
@@ -127,15 +147,29 @@ export function BookingDetailSheet({ booking, onClose }: BookingDetailSheetProps
                 </>
               )}
 
-              {booking.adminNotes && (
-                <>
-                  <Separator />
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Admin Notes</p>
-                    <p className="text-sm text-muted-foreground">{booking.adminNotes}</p>
-                  </div>
-                </>
-              )}
+              <Separator />
+              <div className="space-y-2">
+                <Label htmlFor="internalNotes" className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Internal Notes (admin only)
+                </Label>
+                <Textarea
+                  id="internalNotes"
+                  placeholder="Add private notes about this booking..."
+                  value={internalNotes}
+                  onChange={(e) => setInternalNotes(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSaveNotes}
+                  disabled={notesSaving || internalNotes === (booking.adminNotes ?? "")}
+                  className="w-full"
+                >
+                  {notesSaving ? "Saving…" : "Save Notes"}
+                </Button>
+              </div>
 
               {booking.status === "pending" && (
                 <>

@@ -132,6 +132,18 @@ export const updateStatus = mutation({
   },
 });
 
+export const updateNotes = mutation({
+  args: {
+    bookingId: v.id("bookings"),
+    notes: v.string(),
+  },
+  handler: async (ctx, { bookingId, notes }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+    await ctx.db.patch(bookingId, { adminNotes: notes });
+  },
+});
+
 export const getBookingForEmail = internalQuery({
   args: { bookingId: v.id("bookings") },
   handler: async (ctx, { bookingId }) => {
