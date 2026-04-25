@@ -3,6 +3,7 @@ import Image from "next/image";
 import { singleVenueSlug } from "@/lib/config";
 import { Wifi, Car, Wind, Tv, ChefHat, Sparkles, Music2, Users } from "lucide-react";
 import { TestimonialSection } from "@/components/landing/TestimonialSection";
+import { ComingSoonVenues } from "@/components/landing/ComingSoonVenues";
 
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
   wifi: <Wifi className="w-4 h-4" />,
@@ -152,6 +153,8 @@ function LandingContent({ slug }: { slug: string }) {
           </Link>
         </div>
       </section>
+
+      <ComingSoonVenues />
 
       <TestimonialSection />
 
