@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [isLoading, isAuthenticated, pathname, router]);
 
-  if (isLoading) {
+  if (isLoading && pathname !== "/admin/login") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-3 w-64">

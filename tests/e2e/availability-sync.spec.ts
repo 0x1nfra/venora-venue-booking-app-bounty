@@ -15,17 +15,25 @@ test("date picker disables dates with approved bookings", async ({ page }) => {
     timeout: 10000,
   });
 
-  const approvedDate = addDays(new Date(), 7);
-  const approvedDay = approvedDate.getDate().toString();
+  // Seed runs on Convex (UTC). Compute today+7 in UTC to match.
+  const nowUtc = new Date();
+  const approvedDate = new Date(Date.UTC(
+    nowUtc.getUTCFullYear(),
+    nowUtc.getUTCMonth(),
+    nowUtc.getUTCDate() + 7,
+  ));
+  const approvedDay = approvedDate.getUTCDate().toString();
+  const localNow = new Date();
+  const localMonth = localNow.getMonth();
+  const approvedMonth = approvedDate.getUTCMonth();
 
   // Navigate forward if approved date is in next month
-  if (approvedDate.getMonth() !== new Date().getMonth()) {
+  if (approvedMonth !== localMonth) {
     await page.getByRole("button", { name: /next month/i }).click();
   }
 
-  // Disabled cells have aria-disabled="true" on the <td> element
   const disabledCell = page
-    .locator('td[aria-disabled="true"]')
+    .locator('td[data-disabled="true"]')
     .filter({ hasText: new RegExp(`^${approvedDay}$`) })
     .first();
 
@@ -55,7 +63,7 @@ test("approved booking date becomes disabled after admin action", async ({ page,
 
   // Click the day button (must click the <button> inside the gridcell)
   const dayButton = page
-    .locator("td:not([aria-disabled='true'])")
+    .locator("td:not([data-disabled='true'])")
     .locator("button")
     .filter({ hasText: new RegExp(`^${targetDay}$`) })
     .first();
@@ -98,7 +106,7 @@ test("approved booking date becomes disabled after admin action", async ({ page,
   }
 
   const blockedCell = page
-    .locator('td[aria-disabled="true"]')
+    .locator('td[data-disabled="true"]')
     .filter({ hasText: new RegExp(`^${targetDay}$`) })
     .first();
 

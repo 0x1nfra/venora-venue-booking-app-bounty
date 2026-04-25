@@ -1,12 +1,11 @@
 import { query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getMyVendor = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-    const userId = identity.subject as Id<"users">;
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     return ctx.db
       .query("vendors")
       .withIndex("by_owner", (q) => q.eq("ownerId", userId))

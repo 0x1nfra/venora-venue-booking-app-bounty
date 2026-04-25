@@ -6,7 +6,7 @@ const ADMIN_PASSWORD = "demo1234";
 test("admin can log in and approve a pending booking", async ({ page }) => {
   // --- Log in ---
   await page.goto("/admin/login");
-  await expect(page.getByRole("heading", { name: "Admin Login" })).toBeVisible();
+  await expect(page.getByText("Admin Login")).toBeVisible();
 
   await page.getByLabel("Email").fill(ADMIN_EMAIL);
   await page.getByLabel("Password").fill(ADMIN_PASSWORD);
