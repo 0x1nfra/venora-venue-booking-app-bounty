@@ -60,7 +60,7 @@ export function BookingDetailSheet({ booking, onClose }: BookingDetailSheetProps
 
   return (
     <Sheet open={!!booking} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto px-6 pb-6">
         {booking && (
           <>
             <SheetHeader className="pb-4">
