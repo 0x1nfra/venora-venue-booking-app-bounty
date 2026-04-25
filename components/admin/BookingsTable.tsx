@@ -1,6 +1,9 @@
 "use client";
 
-import { Doc } from "@/convex/_generated/dataModel";
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import { StatusBadge } from "@/components/booking/StatusBadge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -11,10 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
-import { CalendarDays, Inbox } from "lucide-react";
+import { CalendarDays, CheckCircle, Inbox, XCircle } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { toast } from "sonner";
 import { format } from "date-fns";
 
 type Booking = Doc<"bookings">;
@@ -42,6 +47,25 @@ interface BookingsTableProps {
 
 export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps) {
   const { filterTab, setFilterTab } = useAdminUIStore();
+  const [loadingId, setLoadingId] = useState<Id<"bookings"> | null>(null);
+  const updateStatus = useMutation(api.bookings.updateStatus);
+
+  async function handleInlineAction(
+    e: React.MouseEvent,
+    bookingId: Id<"bookings">,
+    status: "approved" | "rejected",
+  ) {
+    e.stopPropagation();
+    setLoadingId(bookingId);
+    try {
+      await updateStatus({ bookingId, status });
+      toast.success(status === "approved" ? "Booking approved." : "Booking rejected.");
+    } catch {
+      toast.error("Failed to update status. Try again.");
+    } finally {
+      setLoadingId(null);
+    }
+  }
 
   const filtered =
     bookings?.filter((b) => filterTab === "all" || b.status === filterTab) ?? [];
@@ -95,6 +119,7 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
                 <TableHead className="hidden md:table-cell">Event Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden sm:table-cell text-right">Submitted</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,6 +154,32 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-right text-xs text-muted-foreground font-mono">
                     {format(new Date(booking._creationTime), "dd MMM, HH:mm")}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {booking.status === "pending" && (
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs text-green-700 border-green-200 hover:bg-green-50 hover:text-green-800 cursor-pointer"
+                          disabled={loadingId === booking._id}
+                          onClick={(e) => handleInlineAction(e, booking._id, "approved")}
+                        >
+                          <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs text-red-700 border-red-200 hover:bg-red-50 hover:text-red-800 cursor-pointer"
+                          disabled={loadingId === booking._id}
+                          onClick={(e) => handleInlineAction(e, booking._id, "rejected")}
+                        >
+                          <XCircle className="h-3.5 w-3.5 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

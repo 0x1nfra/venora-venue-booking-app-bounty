@@ -9,7 +9,8 @@ import { BookingDetailSheet } from "@/components/admin/BookingDetailSheet";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut, Building2 } from "lucide-react";
+import Image from "next/image";
+import { LogOut } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const { signOut } = useAuthActions();
@@ -33,13 +34,16 @@ export default function AdminDashboardPage() {
       <header className="border-b bg-card">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-primary" />
-            <span className="font-semibold text-lg">Venora Admin</span>
-            {vendor && (
-              <span className="hidden sm:inline text-sm text-muted-foreground ml-2">
-                — {vendor.name}
-              </span>
-            )}
+            <Image
+              src="/venora-logo.svg"
+              alt="Venora"
+              width={100}
+              height={28}
+              className="h-7 w-auto"
+            />
+            <span className="text-sm font-medium text-muted-foreground border-l pl-2 ml-1">
+              Admin
+            </span>
           </div>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="h-4 w-4 mr-2" />
