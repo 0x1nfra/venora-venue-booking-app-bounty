@@ -9,10 +9,10 @@ export const EVENT_TYPES = [
 ] as const;
 
 export const EVENT_TYPE_LABELS: Record<(typeof EVENT_TYPES)[number], string> = {
-  wedding: "Wedding",
+  wedding: "Wedding Reception",
   conference: "Conference",
-  birthday: "Birthday Party",
-  corporate: "Corporate Event",
+  birthday: "Birthday Celebration",
+  corporate: "Corporate Retreat",
   other: "Other",
 };
 
