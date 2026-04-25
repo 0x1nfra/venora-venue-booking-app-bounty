@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="space-y-1">
-          <div className="text-2xl font-bold tracking-tight text-primary mb-1">Venora</div>
+          <div className="font-serif italic text-3xl font-bold tracking-tight text-primary mb-1">Venora</div>
           <CardTitle className="text-xl">Admin Login</CardTitle>
           <CardDescription>Sign in to manage your venue bookings.</CardDescription>
         </CardHeader>

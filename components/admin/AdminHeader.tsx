@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -24,18 +23,17 @@ export function AdminHeader() {
   }
 
   return (
-    <header className="border-b bg-card">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-[0.5px] border-border shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 flex items-center justify-between h-16">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/venora-logo.svg"
-              alt="Venora"
-              width={100}
-              height={28}
-              className="h-7 w-auto"
-            />
-            <span className="text-sm font-medium text-muted-foreground border-l pl-2 ml-1">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/dashboard"
+              className="font-serif italic text-xl font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity"
+            >
+              Venora
+            </Link>
+            <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
               Admin
             </span>
           </div>
