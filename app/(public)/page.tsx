@@ -77,7 +77,7 @@ function LandingContent({ slug }: { slug: string }) {
       </section>
 
       {/* Quick stats */}
-      <section className="bg-card border-b border-[0.5px] border-border">
+      <section className="bg-card border-b border-hairline border-border">
         <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           {[
             { label: "Capacity", value: "500 guests" },
@@ -106,7 +106,7 @@ function LandingContent({ slug }: { slug: string }) {
             {Object.entries(AMENITY_LABELS).map(([key, label]) => (
               <div
                 key={key}
-                className="flex items-center gap-3 bg-card rounded-lg p-4 border border-[0.5px] border-border shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
+                className="flex items-center gap-3 bg-card rounded-lg p-4 border border-hairline border-border shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
               >
                 <span className="text-primary">{AMENITY_ICONS[key]}</span>
                 <span className="text-sm font-medium">{label}</span>
@@ -145,7 +145,7 @@ function LandingContent({ slug }: { slug: string }) {
         <div className="text-center mt-8">
           <Link
             href={`/venues/${slug}`}
-            className="inline-flex items-center justify-center rounded-full border border-[0.5px] border-border bg-card px-6 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            className="inline-flex items-center justify-center rounded-full border border-hairline border-border bg-card px-6 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             View Full Venue
           </Link>

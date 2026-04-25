@@ -23,7 +23,7 @@ export function AdminHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-[0.5px] border-border shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-hairline border-border shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 flex items-center justify-between h-16">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">

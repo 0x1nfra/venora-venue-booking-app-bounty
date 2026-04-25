@@ -52,7 +52,7 @@ export function ActivityFeed({ bookings }: { bookings: Booking[] }) {
     .slice(0, 8);
 
   return (
-    <Card className="border-[0.5px] h-fit">
+    <Card className="border-hairline h-fit">
       <CardHeader className="pb-3 pt-5 px-5">
         <h2 className="font-serif text-lg font-semibold">Activity Feed</h2>
         <p className="text-xs text-muted-foreground">Recent booking events</p>

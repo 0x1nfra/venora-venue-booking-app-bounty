@@ -44,12 +44,12 @@ export default function VenueDetailPage(props: { params: Promise<{ slug: string 
             bookingMode={venue.bookingMode}
           />
 
-          <section className="pt-8 mt-8 border-t border-[0.5px] border-border">
+          <section className="pt-8 mt-8 border-t border-hairline border-border">
             <h2 className="font-serif text-xl font-semibold mb-3">About this space</h2>
             <p className="text-muted-foreground leading-relaxed">{venue.description}</p>
           </section>
 
-          <section className="pt-8 mt-8 border-t border-[0.5px] border-border">
+          <section className="pt-8 mt-8 border-t border-hairline border-border">
             <h2 className="font-serif text-xl font-semibold mb-4">Amenities</h2>
             <AmenitiesList amenities={venue.amenities} />
           </section>

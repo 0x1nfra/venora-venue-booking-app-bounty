@@ -3,7 +3,7 @@ import { singleVenueSlug } from "@/lib/config";
 
 export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-[0.5px] border-border shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-hairline border-border shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link
           href="/"

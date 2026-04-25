@@ -17,8 +17,8 @@ export function StickyBookingSidebar({
   city,
 }: StickyBookingSidebarProps) {
   return (
-    <div className="lg:sticky lg:top-28 rounded-xl border border-[0.5px] border-border bg-card p-6 shadow-[0_4px_24px_rgba(154,65,0,0.08)] flex flex-col gap-5">
-      <div className="border-b border-[0.5px] border-border pb-4">
+    <div className="lg:sticky lg:top-28 rounded-xl border border-hairline border-border bg-card p-6 shadow-[0_4px_24px_rgba(154,65,0,0.08)] flex flex-col gap-5">
+      <div className="border-b border-hairline border-border pb-4">
         <p className="text-3xl font-bold tracking-tight">{formatPrice(pricePerDay)}</p>
         <p className="text-sm text-muted-foreground mt-0.5">per day · full-day booking</p>
       </div>

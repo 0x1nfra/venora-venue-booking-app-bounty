@@ -42,7 +42,7 @@ export function StatsCards({ bookings }: { bookings: Booking[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {stats.map(({ label, value, description, icon: Icon }) => (
-        <Card key={label} className="border-[0.5px]">
+        <Card key={label} className="border-hairline">
           <CardContent className="p-5">
             <div className="flex items-start justify-between">
               <div>
