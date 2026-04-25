@@ -28,7 +28,7 @@ export function AmenitiesList({ amenities }: { amenities: string[] }) {
       {amenities.map((key) => (
         <div
           key={key}
-          className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3"
+          className="flex items-center gap-3 rounded-lg border border-[0.5px] border-border bg-muted/30 px-4 py-3"
         >
           <span className="text-primary shrink-0">{ICONS[key] ?? <Sparkles className="w-5 h-5" />}</span>
           <span className="text-sm font-medium">{LABELS[key] ?? key}</span>
