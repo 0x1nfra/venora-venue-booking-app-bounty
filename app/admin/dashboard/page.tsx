@@ -2,19 +2,13 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useRouter } from "next/navigation";
 import { BookingsTable } from "@/components/admin/BookingsTable";
 import { BookingDetailSheet } from "@/components/admin/BookingDetailSheet";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import Image from "next/image";
-import { LogOut } from "lucide-react";
 
 export default function AdminDashboardPage() {
-  const { signOut } = useAuthActions();
-  const router = useRouter();
   const selectedBooking = useAdminUIStore((s) => s.selectedBooking);
   const setSelectedBooking = useAdminUIStore((s) => s.setSelectedBooking);
 
@@ -24,33 +18,9 @@ export default function AdminDashboardPage() {
     vendor ? { vendorId: vendor._id } : "skip"
   );
 
-  async function handleSignOut() {
-    await signOut();
-    router.replace("/admin/login");
-  }
-
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/venora-logo.svg"
-              alt="Venora"
-              width={100}
-              height={28}
-              className="h-7 w-auto"
-            />
-            <span className="text-sm font-medium text-muted-foreground border-l pl-2 ml-1">
-              Admin
-            </span>
-          </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign out
-          </Button>
-        </div>
-      </header>
+      <AdminHeader />
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
         <div className="mb-6">
