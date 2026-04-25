@@ -1,18 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BookingsTable } from "@/components/admin/BookingsTable";
+import { BookingsCalendar } from "@/components/admin/BookingsCalendar";
 import { BookingDetailSheet } from "@/components/admin/BookingDetailSheet";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatsCards } from "@/components/admin/StatsCards";
 import { ActivityFeed } from "@/components/admin/ActivityFeed";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function AdminDashboardPage() {
   const selectedBooking = useAdminUIStore((s) => s.selectedBooking);
   const setSelectedBooking = useAdminUIStore((s) => s.setSelectedBooking);
+  const [dashView, setDashView] = useState<"table" | "calendar">("table");
 
   const vendor = useQuery(api.vendors.getMyVendor);
   const bookings = useQuery(
@@ -46,17 +50,35 @@ export default function AdminDashboardPage() {
               <StatsCards bookings={bookings ?? []} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-4">
-                <ActivityFeed bookings={bookings ?? []} />
+            <Tabs value={dashView} onValueChange={(v) => setDashView(v as "table" | "calendar")}>
+              <div className="flex items-center justify-between mb-4">
+                <TabsList>
+                  <TabsTrigger value="table">Table</TabsTrigger>
+                  <TabsTrigger value="calendar">Calendar</TabsTrigger>
+                </TabsList>
               </div>
-              <div className="lg:col-span-8">
-                <BookingsTable
-                  bookings={bookings}
+
+              <TabsContent value="table">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="lg:col-span-4">
+                    <ActivityFeed bookings={bookings ?? []} />
+                  </div>
+                  <div className="lg:col-span-8">
+                    <BookingsTable
+                      bookings={bookings}
+                      onSelectBooking={setSelectedBooking}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="calendar">
+                <BookingsCalendar
+                  bookings={bookings ?? []}
                   onSelectBooking={setSelectedBooking}
                 />
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
           </>
         )}
       </main>
