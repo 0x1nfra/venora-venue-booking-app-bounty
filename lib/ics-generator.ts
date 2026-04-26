@@ -1,45 +1,71 @@
-import { createEvent } from "ics";
+import { createEvent, EventAttributes } from "ics";
 
-interface BookingIcsData {
-  bookingId: string;
+interface BookingIcsInput {
+  shortId: string;
   venueName: string;
   venueAddress: string;
-  eventDate: string; // "YYYY-MM-DD"
   eventType: string;
+  eventDate: string;
   guestCount: number;
-  statusUrl: string;
+  guestName: string;
+  status: string;
+  publicStatusUrl: string;
 }
 
-export function generateBookingIcs(data: BookingIcsData): Promise<Blob> {
-  const [year, month, day] = data.eventDate.split("-").map(Number);
-  const shortId = toShortId(data.bookingId);
+export async function downloadBookingIcs(booking: BookingIcsInput): Promise<void> {
+  const [year, month, day] = booking.eventDate.split("-").map(Number);
 
+  const event: EventAttributes = {
+    title: `${booking.venueName} — ${formatEventType(booking.eventType)}`,
+    start: [year, month, day],
+    end: [year, month, day + 1],
+    description: [
+      `Booking ID: ${booking.shortId}`,
+      `Guest: ${booking.guestName}`,
+      `Event Type: ${formatEventType(booking.eventType)}`,
+      `Estimated Guests: ${booking.guestCount}`,
+      `Status: ${booking.status.toUpperCase()}`,
+      ``,
+      `Check status: ${booking.publicStatusUrl}`,
+    ].join("\n"),
+    location: booking.venueAddress,
+    status: "TENTATIVE",
+    busyStatus: "TENTATIVE",
+    organizer: { name: "Venora", email: "bookings@venora.app" },
+    productId: "venora/ics",
+  };
+
+  const blob = await createIcsBlob(event);
+  triggerDownload(blob, `venora-booking-${booking.shortId.toLowerCase()}.ics`);
+}
+
+function createIcsBlob(event: EventAttributes): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    createEvent(
-      {
-        title: `${data.venueName} — ${data.eventType}`,
-        start: [year, month, day],
-        end: [year, month, day],
-        duration: { days: 1 },
-        description: [
-          `Booking ID: #VEN-${shortId}`,
-          `Venue: ${data.venueName}`,
-          `Guests: ${data.guestCount}`,
-          `Status: Pending`,
-          `Check status: ${data.statusUrl}`,
-        ].join("\n"),
-        location: data.venueAddress,
-        organizer: { name: "Venora", email: "bookings@venora.app" },
-        url: data.statusUrl,
-      },
-      (error, value) => {
-        if (error || !value) return reject(error ?? new Error("ICS generation failed"));
-        resolve(new Blob([value], { type: "text/calendar" }));
-      }
-    );
+    createEvent(event, (error, value) => {
+      if (error) return reject(error);
+      resolve(new Blob([value], { type: "text/calendar;charset=utf-8" }));
+    });
   });
 }
 
-export function toShortId(convexId: string): string {
-  return convexId.slice(-8).toUpperCase();
+function triggerDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+function formatEventType(raw: string): string {
+  const map: Record<string, string> = {
+    wedding: "Wedding Reception",
+    corporate: "Corporate Retreat",
+    private_dining: "Private Dining",
+    brand_launch: "Brand Launch",
+    other: "Private Event",
+  };
+  return map[raw] ?? "Private Event";
 }

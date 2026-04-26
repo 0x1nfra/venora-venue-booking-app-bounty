@@ -1,140 +1,108 @@
-"use client";
-
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Doc } from "@/convex/_generated/dataModel";
+import { format } from "date-fns";
 import { StatusBadge } from "@/components/booking/StatusBadge";
-import { AddToCalendarButton } from "@/components/booking/AddToCalendarButton";
-import { Link2, Copy } from "lucide-react";
-import { toShortId } from "@/lib/ics-generator";
+import { AddToCalendarButton } from "./AddToCalendarButton";
+import { CopyStatusLinkButton } from "./CopyStatusLinkButton";
+import { toShortBookingId } from "@/lib/short-id";
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  wedding: "Wedding",
-  conference: "Conference",
-  birthday: "Birthday Party",
-  corporate: "Corporate Event",
-  other: "Other",
-};
-
-interface ReceiptCardProps {
-  bookingId: string;
-  venueName: string;
-  venueAddress: string;
-  eventDate: string;
-  eventType: string;
-  guestCount: number;
-  guestEmail: string;
-  status: "pending" | "approved" | "rejected" | "cancelled";
-  publicToken: string;
-  statusUrl: string;
+interface Props {
+  booking: Doc<"bookings">;
+  venue: Doc<"venues">;
+  publicStatusUrl: string;
 }
 
-export function ReceiptCard(props: ReceiptCardProps) {
-  const [copied, setCopied] = useState(false);
-  const shortId = toShortId(props.bookingId);
-
-  async function handleCopyLink() {
-    try {
-      await navigator.clipboard.writeText(props.statusUrl);
-      setCopied(true);
-      toast.success("Link copied");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Could not copy link.");
-    }
-  }
+export function ReceiptCard({ booking, venue, publicStatusUrl }: Props) {
+  const shortId = toShortBookingId(booking._id);
+  const formattedDate = format(new Date(booking.eventDate), "EEEE, d MMMM yyyy");
 
   return (
-    <div className="max-w-[640px] mx-auto px-4 py-12">
-      <div className="flex flex-col items-center text-center mb-8 gap-2">
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight">
-          Request <em>Received</em>
-        </h1>
-        <p className="text-muted-foreground text-sm max-w-sm">
-          We&apos;ve sent the details to{" "}
-          <span className="font-medium text-foreground">{props.guestEmail}</span>.
-          The venue host will respond within 24 hours.
+    <article
+      className="w-full max-w-2xl mx-auto bg-card
+                 border border-border rounded-2xl
+                 shadow-sm p-6 md:p-10"
+    >
+      {/* Header */}
+      <header className="text-center mb-8">
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-2">
+          Concierge Confirmation
         </p>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+          Request <em className="text-primary not-italic">Received</em>
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          We&rsquo;ve sent the details to{" "}
+          <span className="text-foreground font-medium">{booking.guestEmail}</span>. The
+          venue host will respond within 24 hours.
+        </p>
+      </header>
+
+      <div className="border-t border-border my-6" />
+
+      {/* Detail block */}
+      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+        <DetailRow label="Booking ID" value={shortId} mono />
+        <DetailRow label="Status">
+          <StatusBadge status={booking.status} />
+        </DetailRow>
+        <DetailRow label="Venue" value={venue.name} />
+        <DetailRow label="Event Date" value={formattedDate} />
+        <DetailRow label="Event Type" value={formatEventType(booking.eventType)} />
+        <DetailRow label="Estimated Guests" value={String(booking.guestCount)} />
+      </dl>
+
+      <div className="border-t border-border my-6" />
+
+      {/* CTAs */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <AddToCalendarButton
+          shortId={shortId}
+          venueName={venue.name}
+          venueAddress={venue.address}
+          eventType={booking.eventType}
+          eventDate={booking.eventDate}
+          guestCount={booking.guestCount}
+          guestName={booking.guestName}
+          status={booking.status}
+          publicStatusUrl={publicStatusUrl}
+        />
+        <CopyStatusLinkButton url={publicStatusUrl} />
       </div>
 
-      <div className="rounded-2xl border border-border bg-card shadow-sm divide-y divide-border">
-        {/* Detail block */}
-        <div className="p-6 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Booking ID
-            </span>
-            <span className="font-mono text-sm font-semibold">#VEN-{shortId}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Venue
-            </span>
-            <span className="text-sm font-medium">{props.venueName}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Event Date
-            </span>
-            <span className="text-sm font-medium">{props.eventDate}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Event Type
-            </span>
-            <span className="text-sm font-medium">
-              {EVENT_TYPE_LABELS[props.eventType] ?? props.eventType}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Guests
-            </span>
-            <span className="text-sm font-medium">{props.guestCount}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Status
-            </span>
-            <StatusBadge status={props.status} />
-          </div>
-        </div>
+      <p className="text-xs text-muted-foreground text-center mt-6 max-w-md mx-auto">
+        Save this link to check your booking status at any time. We&rsquo;ll
+        also email you when the venue host responds.
+      </p>
+    </article>
+  );
+}
 
-        {/* CTAs */}
-        <div className="p-6 space-y-3">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <AddToCalendarButton
-              bookingId={props.bookingId}
-              venueName={props.venueName}
-              venueAddress={props.venueAddress}
-              eventDate={props.eventDate}
-              eventType={EVENT_TYPE_LABELS[props.eventType] ?? props.eventType}
-              guestCount={props.guestCount}
-              statusUrl={props.statusUrl}
-            />
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={handleCopyLink}
-            >
-              {copied ? (
-                <>
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Link2 className="w-4 h-4 mr-2" />
-                  Check Status Anytime
-                </>
-              )}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Save this link to check your booking status — no account needed.
-          </p>
-        </div>
-      </div>
+interface DetailRowProps {
+  label: string;
+  value?: string;
+  mono?: boolean;
+  children?: React.ReactNode;
+}
+
+function DetailRow({ label, value, mono, children }: DetailRowProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </dt>
+      <dd className={mono ? "font-mono text-sm text-foreground" : "text-sm text-foreground"}>
+        {children ?? value}
+      </dd>
     </div>
   );
+}
+
+function formatEventType(raw: string): string {
+  const map: Record<string, string> = {
+    wedding: "Wedding Reception",
+    corporate: "Corporate Retreat",
+    private_dining: "Private Dining",
+    brand_launch: "Brand Launch",
+    other: "Private Event",
+  };
+  return map[raw] ?? raw;
 }

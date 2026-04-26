@@ -31,24 +31,19 @@ export default function BookingStatusPage(props: {
     );
   }
 
-  const statusUrl =
+  const publicStatusUrl =
     typeof window !== "undefined"
       ? window.location.href
       : `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/booking/${token}`;
 
   return (
-    <ReceiptCard
-      bookingId={booking._id}
-      venueName={booking.venueName}
-      venueAddress="KLCC, Kuala Lumpur"
-      eventDate={booking.eventDate}
-      eventType={booking.eventType}
-      guestCount={booking.guestCount}
-      guestEmail={booking.guestEmail}
-      status={booking.status}
-      publicToken={token}
-      statusUrl={statusUrl}
-    />
+    <main className="min-h-screen pt-24 pb-12 px-4 bg-background">
+      <ReceiptCard
+        booking={booking.booking}
+        venue={booking.venue}
+        publicStatusUrl={publicStatusUrl}
+      />
+    </main>
   );
 }
 

@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useDebounce } from "@/lib/use-debounce";
-import { toShortId } from "@/lib/ics-generator";
+import { toShortBookingId } from "@/lib/short-id";
 
 type Booking = Doc<"bookings">;
 type FilterTab = "all" | "pending" | "approved" | "rejected";
@@ -98,7 +98,7 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
     if (filterTab !== "all" && b.status !== filterTab) return false;
     if (!debouncedSearch) return true;
     const q = debouncedSearch.toLowerCase();
-    const shortId = toShortId(b._id).toLowerCase();
+    const shortId = toShortBookingId(b._id).toLowerCase();
     return (
       b.guestName.toLowerCase().includes(q) ||
       b.guestEmail.toLowerCase().includes(q) ||

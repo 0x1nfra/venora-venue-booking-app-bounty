@@ -1,7 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { singleVenueSlug } from "@/lib/config";
-import { Wifi, Car, Wind, Tv, ChefHat, Sparkles, Music2, Users } from "lucide-react";
+import {
+  Wifi,
+  Car,
+  Wind,
+  Tv,
+  ChefHat,
+  Sparkles,
+  Music2,
+  Users,
+} from "lucide-react";
 import { TestimonialSection } from "@/components/landing/TestimonialSection";
 import { ComingSoonVenues } from "@/components/landing/ComingSoonVenues";
 
@@ -128,12 +137,27 @@ function LandingContent({ slug }: { slug: string }) {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { src: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80", alt: "Grand Hall" },
-            { src: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80", alt: "Banquet Setup" },
-            { src: "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&q=80", alt: "Stage" },
-            { src: "https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=600&q=80", alt: "Reception Area" },
+            {
+              src: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80",
+              alt: "Grand Hall",
+            },
+            {
+              src: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80",
+              alt: "Banquet Setup",
+            },
+            {
+              src: "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&q=80",
+              alt: "Stage",
+            },
+            {
+              src: "https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=600&q=80",
+              alt: "Reception Area",
+            },
           ].map(({ src, alt }) => (
-            <div key={alt} className="relative aspect-square rounded-lg overflow-hidden group">
+            <div
+              key={alt}
+              className="relative aspect-square rounded-lg overflow-hidden group"
+            >
               <Image
                 src={src}
                 alt={alt}
@@ -154,9 +178,8 @@ function LandingContent({ slug }: { slug: string }) {
         </div>
       </section>
 
-      <ComingSoonVenues />
-
       <TestimonialSection />
+      <ComingSoonVenues />
 
       {/* CTA */}
       <section className="bg-primary text-primary-foreground py-16 px-4 text-center">
@@ -164,7 +187,8 @@ function LandingContent({ slug }: { slug: string }) {
           Ready to Book?
         </h2>
         <p className="text-primary-foreground/80 mb-8 max-w-md mx-auto">
-          Submit a booking request in minutes. Our team responds within 24 hours.
+          Submit a booking request in minutes. Our team responds within 24
+          hours.
         </p>
         <Link
           href={`/book/${slug}`}

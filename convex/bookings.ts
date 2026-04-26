@@ -60,7 +60,8 @@ export const getByPublicToken = query({
       .unique();
     if (!booking) return null;
     const venue = await ctx.db.get(booking.venueId);
-    return { ...booking, venueName: venue?.name ?? "Unknown Venue" };
+    if (!venue) return null;
+    return { booking, venue };
   },
 });
 
@@ -132,17 +133,6 @@ export const updateStatus = mutation({
   },
 });
 
-export const updateNotes = mutation({
-  args: {
-    bookingId: v.id("bookings"),
-    notes: v.string(),
-  },
-  handler: async (ctx, { bookingId, notes }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-    await ctx.db.patch(bookingId, { adminNotes: notes });
-  },
-});
 
 export const getBookingForEmail = internalQuery({
   args: { bookingId: v.id("bookings") },
