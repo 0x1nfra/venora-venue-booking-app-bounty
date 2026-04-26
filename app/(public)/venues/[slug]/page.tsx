@@ -7,9 +7,8 @@ import { api } from "@/convex/_generated/api";
 import { VenueHero } from "@/components/venue/VenueHero";
 import { VenueGallery } from "@/components/venue/VenueGallery";
 import { AmenitiesList } from "@/components/venue/AmenitiesList";
+import { StickyBookingSidebar } from "@/components/venue/StickyBookingSidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/config";
 
 export default function VenueDetailPage(props: { params: Promise<{ slug: string }> }) {
   const { slug } = use(props.params);
@@ -32,10 +31,10 @@ export default function VenueDetailPage(props: { params: Promise<{ slug: string 
       {/* Gallery */}
       <VenueGallery imageUrls={venue.imageUrls ?? []} venueName={venue.name} />
 
-      {/* Hero info + Book Now (two-column on desktop) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Venue info + sticky booking sidebar (8/4 col on desktop) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Left: venue info */}
-        <div className="lg:col-span-2 flex flex-col gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-0">
           <VenueHero
             name={venue.name}
             city={venue.city}
@@ -45,41 +44,25 @@ export default function VenueDetailPage(props: { params: Promise<{ slug: string 
             bookingMode={venue.bookingMode}
           />
 
-          <section>
-            <h2 className="text-xl font-semibold mb-3">About this venue</h2>
+          <section className="pt-8 mt-8 border-t border-hairline border-border">
+            <h2 className="font-serif text-xl font-semibold mb-3">About this space</h2>
             <p className="text-muted-foreground leading-relaxed">{venue.description}</p>
           </section>
 
-          <section>
-            <h2 className="text-xl font-semibold mb-4">Amenities</h2>
+          <section className="pt-8 mt-8 border-t border-hairline border-border">
+            <h2 className="font-serif text-xl font-semibold mb-4">Amenities</h2>
             <AmenitiesList amenities={venue.amenities} />
           </section>
         </div>
 
-        {/* Right: booking card */}
+        {/* Right: sticky booking sidebar */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 rounded-xl border border-border bg-card p-6 shadow-sm flex flex-col gap-5">
-            <div>
-              <p className="text-2xl font-bold">{formatPrice(venue.pricePerDay)}</p>
-              <p className="text-sm text-muted-foreground">per day · full-day booking</p>
-            </div>
-            <ul className="text-sm text-muted-foreground flex flex-col gap-2">
-              <li className="flex items-center justify-between">
-                <span>Capacity</span>
-                <span className="font-medium text-foreground">Up to {venue.capacity.toLocaleString()} guests</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span>Location</span>
-                <span className="font-medium text-foreground">{venue.city}</span>
-              </li>
-            </ul>
-            <Button asChild size="lg" className="w-full">
-              <Link href={`/book/${slug}`}>Book Now</Link>
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              No payment needed to request — we&apos;ll confirm within 24 hours.
-            </p>
-          </div>
+          <StickyBookingSidebar
+            venueSlug={slug}
+            pricePerDay={venue.pricePerDay}
+            capacity={venue.capacity}
+            city={venue.city}
+          />
         </div>
       </div>
     </div>

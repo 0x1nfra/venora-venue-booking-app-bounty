@@ -9,6 +9,8 @@ interface AdminUIStore {
   setFilterTab: (tab: FilterTab) => void;
   selectedBooking: Booking | null;
   setSelectedBooking: (booking: Booking | null) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 export const useAdminUIStore = create<AdminUIStore>((set) => ({
@@ -16,4 +18,6 @@ export const useAdminUIStore = create<AdminUIStore>((set) => ({
   setFilterTab: (tab) => set({ filterTab: tab }),
   selectedBooking: null,
   setSelectedBooking: (booking) => set({ selectedBooking: booking }),
+  searchQuery: "",
+  setSearchQuery: (query) => set({ searchQuery: query }),
 }));

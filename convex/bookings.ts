@@ -60,7 +60,8 @@ export const getByPublicToken = query({
       .unique();
     if (!booking) return null;
     const venue = await ctx.db.get(booking.venueId);
-    return { ...booking, venueName: venue?.name ?? "Unknown Venue" };
+    if (!venue) return null;
+    return { booking, venue };
   },
 });
 
@@ -131,6 +132,7 @@ export const updateStatus = mutation({
     });
   },
 });
+
 
 export const getBookingForEmail = internalQuery({
   args: { bookingId: v.id("bookings") },

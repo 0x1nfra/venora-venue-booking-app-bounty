@@ -17,13 +17,31 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminUIStore } from "@/stores/admin-ui-store";
-import { CalendarDays, CheckCircle, Inbox, XCircle } from "lucide-react";
+import { CalendarDays, CheckCircle, ChevronDown, ChevronUp, ChevronsUpDown, Inbox, Search, X, XCircle } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useDebounce } from "@/lib/use-debounce";
+import { toShortBookingId } from "@/lib/short-id";
 
 type Booking = Doc<"bookings">;
 type FilterTab = "all" | "pending" | "approved" | "rejected";
+type SortCol = "guestName" | "eventDate" | "status" | "_creationTime";
+type SortDir = "asc" | "desc";
+
+const STATUS_ORDER = { pending: 0, approved: 1, rejected: 2, cancelled: 3 };
+
+function sortBookings(bookings: Booking[], col: SortCol, dir: SortDir): Booking[] {
+  return [...bookings].sort((a, b) => {
+    let cmp = 0;
+    if (col === "guestName") cmp = a.guestName.localeCompare(b.guestName);
+    else if (col === "eventDate") cmp = a.eventDate.localeCompare(b.eventDate);
+    else if (col === "status") cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+    else cmp = a._creationTime - b._creationTime;
+    return dir === "asc" ? cmp : -cmp;
+  });
+}
 
 const TABS: { value: FilterTab; label: string }[] = [
   { value: "all", label: "All" },
@@ -46,9 +64,17 @@ interface BookingsTableProps {
 }
 
 export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps) {
-  const { filterTab, setFilterTab } = useAdminUIStore();
+  const { filterTab, setFilterTab, searchQuery, setSearchQuery } = useAdminUIStore();
   const [loadingId, setLoadingId] = useState<Id<"bookings"> | null>(null);
+  const [sortCol, setSortCol] = useState<SortCol>("_creationTime");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const updateStatus = useMutation(api.bookings.updateStatus);
+  const debouncedSearch = useDebounce(searchQuery);
+
+  function handleSort(col: SortCol) {
+    if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortCol(col); setSortDir("asc"); }
+  }
 
   async function handleInlineAction(
     e: React.MouseEvent,
@@ -67,11 +93,39 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
     }
   }
 
-  const filtered =
-    bookings?.filter((b) => filterTab === "all" || b.status === filterTab) ?? [];
+  const sorted = sortBookings(bookings ?? [], sortCol, sortDir);
+  const filtered = sorted.filter((b) => {
+    if (filterTab !== "all" && b.status !== filterTab) return false;
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
+    const shortId = toShortBookingId(b._id).toLowerCase();
+    return (
+      b.guestName.toLowerCase().includes(q) ||
+      b.guestEmail.toLowerCase().includes(q) ||
+      shortId.includes(q.replace(/^ven-/i, ""))
+    );
+  });
 
   return (
     <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by guest name, email, or booking ID..."
+          className="pl-9 pr-9"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       <Tabs value={filterTab} onValueChange={(v) => setFilterTab(v as FilterTab)}>
         <div className="overflow-x-auto">
         <TabsList>
@@ -102,23 +156,34 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={Inbox}
-          title="No bookings yet"
+          title={debouncedSearch ? "No bookings match your search" : "No bookings yet"}
           description={
-            filterTab === "all"
-              ? "Bookings will appear here in real-time."
-              : `No ${filterTab} bookings.`
+            debouncedSearch
+              ? undefined
+              : filterTab === "all"
+                ? "Bookings will appear here in real-time."
+                : `No ${filterTab} bookings.`
           }
-        />
+        >
+          {debouncedSearch && (
+            <button
+              className="text-sm text-primary underline-offset-2 hover:underline"
+              onClick={() => setSearchQuery("")}
+            >
+              Clear search
+            </button>
+          )}
+        </EmptyState>
       ) : (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Guest</TableHead>
-                <TableHead className="hidden sm:table-cell">Date</TableHead>
+                <SortHead col="guestName" label="Guest" current={sortCol} dir={sortDir} onSort={handleSort} />
+                <SortHead col="eventDate" label="Date" current={sortCol} dir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
                 <TableHead className="hidden md:table-cell">Event Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden sm:table-cell text-right">Submitted</TableHead>
+                <SortHead col="status" label="Status" current={sortCol} dir={sortDir} onSort={handleSort} />
+                <SortHead col="_creationTime" label="Submitted" current={sortCol} dir={sortDir} onSort={handleSort} className="hidden sm:table-cell text-right justify-end" />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -188,5 +253,35 @@ export function BookingsTable({ bookings, onSelectBooking }: BookingsTableProps)
         </div>
       )}
     </div>
+  );
+}
+
+function SortHead({
+  col,
+  label,
+  current,
+  dir,
+  onSort,
+  className,
+}: {
+  col: SortCol;
+  label: string;
+  current: SortCol;
+  dir: SortDir;
+  onSort: (col: SortCol) => void;
+  className?: string;
+}) {
+  const active = current === col;
+  const Icon = active ? (dir === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
+  return (
+    <TableHead className={className}>
+      <button
+        className="flex items-center gap-1 hover:text-foreground transition-colors"
+        onClick={() => onSort(col)}
+      >
+        {label}
+        <Icon className="h-3.5 w-3.5 opacity-60" />
+      </button>
+    </TableHead>
   );
 }

@@ -40,10 +40,12 @@ export default function BookingPage(props: {
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Request a Booking</h1>
+        <h1 className="font-serif text-4xl font-semibold tracking-tight mb-2">
+          Concierge Request
+        </h1>
         <p className="text-muted-foreground">
-          Fill in the details below and we&apos;ll get back to you within 24
-          hours.
+          Allow us to tailor an extraordinary experience for your upcoming
+          event.
         </p>
       </div>
 

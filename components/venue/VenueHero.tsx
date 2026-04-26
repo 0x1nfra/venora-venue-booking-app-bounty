@@ -13,7 +13,7 @@ interface VenueHeroProps {
 export function VenueHero({ name, city, address, capacity, pricePerDay, bookingMode }: VenueHeroProps) {
   return (
     <div className="flex flex-col gap-3">
-      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{name}</h1>
+      <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight">{name}</h1>
       <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
         <span className="flex items-center gap-1.5 text-sm">
           <MapPin className="w-4 h-4 shrink-0" />

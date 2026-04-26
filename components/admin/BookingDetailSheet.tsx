@@ -127,16 +127,6 @@ export function BookingDetailSheet({ booking, onClose }: BookingDetailSheetProps
                 </>
               )}
 
-              {booking.adminNotes && (
-                <>
-                  <Separator />
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Admin Notes</p>
-                    <p className="text-sm text-muted-foreground">{booking.adminNotes}</p>
-                  </div>
-                </>
-              )}
-
               {booking.status === "pending" && (
                 <>
                   <Separator />
